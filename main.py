@@ -17,21 +17,31 @@ class CLI:
         async with Agent() as agent:
             self.agent = agent
             return await self._process_message(message)
-
+    
     async def _process_message(self,message:str) ->str | None:
         if self.agent is None:
             return None
 
-        full_response = ""
+        assistant_steaming = False
+        final_response = ""
         async for event in self.agent.run(message=message):
             if event.type==AgentEventType.TEXT_DELTA:
                 content = event.data.get("content", "")
+                if not assistant_steaming:
+                    self.tui.begin_assistant()
+                    assistant_steaming = True
                 self.tui.stream_assistant_delta(content=content)
-                full_response += content
             elif event.type == AgentEventType.TEXT_COMPLETE:
-                full_response = event.data.get("content", "")
-        return full_response
+                final_response = event.data.get("content", "")
+                if assistant_steaming:
+                    assistant_steaming = False
+                    self.tui.end_assistant()
+            elif event.type == AgentEventType.AGENT_ERROR:
+                error_message = event.data.get("error", "Unknown error")
+                console.print(f"[error]Error: {error_message}[/error]")
+                return None
 
+        return final_response         
 
 async def run(messages:list[dict[str,Any]],stream:bool=False):
    
@@ -51,7 +61,7 @@ def main(prompt:str| None):
     if prompt:
         result = asyncio.run(cli.run_single(message=prompt))
         if result is None:
-            sys.exit(1)
+            sys.exit(1)  #error
 
 if __name__ == "__main__":
     main()
