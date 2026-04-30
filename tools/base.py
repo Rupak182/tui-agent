@@ -36,6 +36,14 @@ class ToolResult:
     error:str|None = None
     metadata:dict[str,Any]  = Field(default_factory=dict)
 
+    @classmethod
+    def error_result(cls, error_message:str)->ToolResult:
+        return cls(success=False, output="", error=error_message)
+
+    @classmethod
+    def success_result(cls, output:str, **kwargs)->ToolResult:
+        return cls(success=True, output=output, error=None,**kwargs)
+
 class Tool(abc.ABC):
     name:str
     description:str ="Base Tool"
