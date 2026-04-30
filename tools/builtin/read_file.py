@@ -10,7 +10,7 @@ class ReadFileParams(BaseModel):
     offset:int = Field(1,ge=1, description="Line number to start reading from (1-based index).Defaults to 1")
     limit:int |None = Field(None, ge=1, description="Maximum number of lines to read. If not specified, reads the entire file starting from the offset line.")
 
-class ReadFile(Tool):
+class ReadFileTool(Tool):
     name = "read_file"
     description = (
         "Read the contents of a text file. Returns the file content with line numbers. "

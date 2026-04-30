@@ -21,15 +21,38 @@ class LLMClient:
         if self._client:
             await self._client.close()
             self._client = None
-        
+
+    def build_tools(self, tools:list[dict[str,Any]])-> list[dict[str,Any]]:
+       return [
+           {
+               'type':'function',
+               'function': {
+                     'name': tool.get("name"),
+                     'description': tool.get("description",""),
+                     'parameters': tool.get("parameters", {
+                        "type": "object",
+                        "properties": {},
+                     })
+               }
+           }
+           for tool in tools
+       ]
     
-    async def chat_completion(self, messages:list[dict[str,Any]],stream:bool=False)->AsyncGenerator[StreamEvent, None]  :
+    async def chat_completion(self, messages:list[dict[str,Any]],
+                              tools:list[dict[str,Any]]|None=None,
+                              stream:bool=False)->AsyncGenerator[StreamEvent, None]  :
         client= self.get_client()
         kwargs={
-        "model":"nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "model":"openai/gpt-oss-120b:free",
         "messages":messages,
         "stream":stream
         }
+        if tools:
+            kwargs["tools"]= self.build_tools(tools)
+
+        kwargs["tool_choice"] = "auto"
+
+
         for attempt in range(self._max_retries+1):
             try:
                 if stream:
@@ -83,7 +106,9 @@ class LLMClient:
                     type=StreamEventType.TEXT_DELTA,
                     text_delta=TextDelta(content=delta.content),
                 )
-
+            # print(delta.tool_calls)
+            print(delta)
+            
 
         yield StreamEvent(
             type=StreamEventType.MESSAGE_COMPLETE,

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 from pydantic import BaseModel, Field, ValidationError
-from pydantic.schema import model_json_schema
+from pydantic.json_schema import model_json_schema
 from pathlib import Path
 
 class ToolKind(Enum):
@@ -37,8 +37,8 @@ class ToolResult:
     metadata:dict[str,Any]  = Field(default_factory=dict)
 
     @classmethod
-    def error_result(cls, error_message:str)->ToolResult:
-        return cls(success=False, output="", error=error_message)
+    def error_result(cls, error_message:str, **kwargs)->ToolResult:
+        return cls(success=False, output="", error=error_message, **kwargs)
 
     @classmethod
     def success_result(cls, output:str, **kwargs)->ToolResult:
@@ -66,7 +66,7 @@ class Tool(abc.ABC):
 
         if isinstance(schema, type) and issubclass(schema, BaseModel):
             try:
-                BaseModel(**params)
+                schema(**params)
                 return []
             except ValidationError as e:
                 errors =[]
