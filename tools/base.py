@@ -35,6 +35,7 @@ class ToolResult:
     output:str
     error:str|None = None
     metadata:dict[str,Any]  = Field(default_factory=dict)
+    truncated:bool = False
 
     @classmethod
     def error_result(cls, error_message:str, **kwargs)->ToolResult:
@@ -43,6 +44,12 @@ class ToolResult:
     @classmethod
     def success_result(cls, output:str, **kwargs)->ToolResult:
         return cls(success=True, output=output, error=None,**kwargs)
+    
+    def to_model_output(self)-> str:
+        if self.success:
+            return self.output
+        else:
+            return f"Error: {self.error}\n\n {self.output}"
 
 class Tool(abc.ABC):
     name:str

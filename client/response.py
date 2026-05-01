@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 @dataclass
 class TextDelta:
@@ -14,6 +15,10 @@ class StreamEventType(str,Enum):
     TEXT_DELTA="text_delta"
     MESSAGE_COMPLETE="message_complete"
     ERROR="error"
+    
+    TOOL_CALL_START="tool_call_start"
+    TOOL_CALL_DELTA="tool_call_delta"
+    TOOL_CALL_COMPLETE="tool_call_complete"
 
 
 @dataclass
@@ -32,6 +37,33 @@ class TokenUsage:
             cached_tokens=self.cached_tokens + other.cached_tokens
         )
 
+
+@dataclass
+class ToolCallDelta:
+    call_id:str
+    name:str
+    arguments_delta:str=""
+
+@dataclass
+class ToolCall:
+    call_id:str
+    name:str
+    arguments:str
+
+
+@dataclass
+class ToolResultMessage:
+    tool_call_id:str
+    content:str
+    is_error:bool=False
+
+    def to_openai_message(self)->dict[str,Any]:
+        return {
+            "role": "tool",
+            "tool_call_id": self.tool_call_id,
+            "content": self.content,
+        }
+
 @dataclass
 class StreamEvent:
     type: StreamEventType
@@ -39,7 +71,8 @@ class StreamEvent:
     error: str | None = None
     finish_reason: str | None = None
     usage: TokenUsage | None = None
-
+    tool_call_delta:ToolCallDelta | None = None
+    tool_call:ToolCall | None = None
     @classmethod
     def stream_error(cls,error:str)->StreamEvent:
         return cls(
@@ -67,3 +100,16 @@ class StreamEvent:
             type=StreamEventType.ERROR,
             error=error
         )
+    
+
+def parse_tool_call_arguments(arguments_str:str)->dict[str,Any]:
+    import json
+    if not arguments_str:
+        return {}
+    
+    try:
+        return json.loads(arguments_str)
+    except json.JSONDecodeError:
+        return {
+           "raw_arguments": arguments_str
+        }

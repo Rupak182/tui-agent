@@ -39,7 +39,7 @@ class ToolRegistery:
     def get(self, tool_name:str)->Tool | None:
         return self._tools.get(tool_name)
 
-    async def invoke(self,name:str,params:dict[str,Any],cwd:str|None=None):
+    async def invoke(self,name:str,params:dict[str,Any],cwd:Path)->ToolResult:
         tool = self.get(name)
         if tool is None:    
             result = ToolResult.error_result(
@@ -78,8 +78,8 @@ class ToolRegistery:
 
       
 def create_default_registery()->ToolRegistery:
-    registery = ToolRegistery()
+    registry = ToolRegistery()
     BUILTIN_TOOLS = [ReadFileTool]
     for tool_class in get_all_builtin_tools():
-        registery.register(tool_class())
-    return registery
+        registry.register(tool_class())
+    return registry

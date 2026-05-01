@@ -25,6 +25,8 @@ class CLI:
         assistant_steaming = False
         final_response = ""
         async for event in self.agent.run(message=message):
+            print(event)
+
             if event.type==AgentEventType.TEXT_DELTA:
                 content = event.data.get("content", "")
                 if not assistant_steaming:

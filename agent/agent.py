@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import Any, AsyncGenerator
 from agent.events import AgentEvent, AgentEventType
 from client.llm_client import LLMClient
-from client.response import StreamEventType
+from client.response import StreamEventType, ToolCall
 from context.manager import ContextManager
 from tools.registry import create_default_registery  
-
-
+from pathlib import Path
+from client.response import ToolResultMessage
 
 class Agent:
     def __init__(self):
@@ -30,6 +30,7 @@ class Agent:
     async def _agentic_loop(self) -> AsyncGenerator[AgentEvent, None]:
         response_text = ""
         tool_schemas= self.tool_registery.get_schemas()
+        tool_calls:list[ToolCall] = []
         async for event in self.client.chat_completion(
            self.context_manager.get_messages(),
            tools=tool_schemas if tool_schemas else None,
@@ -41,6 +42,10 @@ class Agent:
                     response_text += content
                     yield AgentEvent.text_delta(content=content)
 
+            elif event.type == StreamEventType.TOOL_CALL_COMPLETE:
+                if event.tool_call:
+                    tool_calls.append(event.tool_call)
+
             elif event.type == StreamEventType.ERROR:
                 yield AgentEvent.agent_error(error=event.error) or "Unknown error"
 
@@ -48,6 +53,42 @@ class Agent:
 
         if response_text:
             yield AgentEvent.text_complete(content=response_text)
+
+
+        tool_call_results: list[ToolResultMessage] = []
+        for tool_call in tool_calls:
+            yield AgentEvent.tool_call_start(
+                call_id=tool_call.call_id,
+                name=tool_call.name,
+                arguments=tool_call.arguments
+             )
+            tool_result = await self.tool_registery.invoke(
+                name=tool_call.name,
+                params=tool_call.arguments,
+                cwd=Path.cwd()
+            )
+
+            yield AgentEvent.tool_call_complete(
+                call_id=tool_call.call_id,
+                name=tool_call.name,
+                result=tool_result
+             )
+            
+            tool_call_results.append(
+                ToolResultMessage(
+                    tool_call_id=tool_call.call_id,
+                    content=tool_result.to_model_output(),
+                    is_error=not tool_result.success
+                )
+            )
+
+
+        for tool_result in tool_call_results:
+            self.context_manager.add_tool_result(
+                tool_result.tool_call_id,
+                tool_result.content,
+            )
+            
 
 
 
