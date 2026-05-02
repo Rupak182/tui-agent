@@ -4,7 +4,7 @@ from agent.events import AgentEvent, AgentEventType
 from client.llm_client import LLMClient
 from client.response import StreamEventType, ToolCall
 from context.manager import ContextManager
-from tools.registry import create_default_registery  
+from tools.registry import create_default_registry  
 from pathlib import Path
 from client.response import ToolResultMessage
 
@@ -12,7 +12,7 @@ class Agent:
     def __init__(self):
         self.client = LLMClient()
         self.context_manager = ContextManager()
-        self.tool_registery = create_default_registery()
+        self.tool_registry = create_default_registry()
 
     async def run(self, message: str) -> AsyncGenerator[AgentEvent, None]:
         yield AgentEvent.agent_start(message=message)
@@ -29,7 +29,7 @@ class Agent:
 
     async def _agentic_loop(self) -> AsyncGenerator[AgentEvent, None]:
         response_text = ""
-        tool_schemas= self.tool_registery.get_schemas()
+        tool_schemas= self.tool_registry.get_schemas()
         tool_calls:list[ToolCall] = []
         async for event in self.client.chat_completion(
            self.context_manager.get_messages(),
@@ -62,7 +62,7 @@ class Agent:
                 name=tool_call.name,
                 arguments=tool_call.arguments
              )
-            tool_result = await self.tool_registery.invoke(
+            tool_result = await self.tool_registry.invoke(
                 name=tool_call.name,
                 params=tool_call.arguments,
                 cwd=Path.cwd()

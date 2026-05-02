@@ -9,7 +9,7 @@ from tools.builtin import ReadFileTool,get_all_builtin_tools
 
 logger = logging.getLogger(__name__)
 
-class ToolRegistery:
+class ToolRegistry:
     def __init__(self):
         self._tools:dict[str,Tool] = {} 
     
@@ -77,8 +77,8 @@ class ToolRegistery:
         
 
       
-def create_default_registery()->ToolRegistery:
-    registry = ToolRegistery()
+def create_default_registry()->ToolRegistry:
+    registry = ToolRegistry()
     BUILTIN_TOOLS = [ReadFileTool]
     for tool_class in get_all_builtin_tools():
         registry.register(tool_class())

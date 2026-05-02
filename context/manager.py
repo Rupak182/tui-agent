@@ -25,8 +25,8 @@ class MessageItem:
         if self.tool_call_id:
             result["tool_call_id"] = self.tool_call_id
         
-        if self.tool_calls:
-            result["tool_calls"] = self.tool_calls
+        # if self.tool_calls:
+        #     result["tool_calls"] = self.tool_calls
         return result
 
 class ContextManager:
