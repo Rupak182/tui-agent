@@ -5,29 +5,41 @@ from agent.agent import Agent, AgentEventType
 from client.llm_client import LLMClient
 import asyncio
 import click
-
+from pathlib import Path
 from ui.tui import TUI, get_console
-
+from config.loader import load_config
+from config.config import Config
 console = get_console()
 class CLI:
-    def __init__(self):
+    def __init__(self,config:Config):
         self.agent:Agent | None = None
-        self.tui=TUI(console=console)
-    
+        self.tui=TUI(config=config, console=console)
+        self.config = config
+
     async def run_single(self,message:str) :
-        async with Agent() as agent:
+        async with Agent(config=self.config) as agent:
             self.agent = agent
             return await self._process_message(message)
         
     
     async def run_interactive(self) :
-        async with Agent() as agent:
+        self.tui.print_welcome(
+            'AI Agent',
+            lines=[
+                f"model: {self.config.model_name}",
+                f"cwd: {self.config.cwd}",
+                "commands: /help /config /approval /model /exit",
+            ],
+        )
+        async with Agent(config=self.config) as agent:
+            self.agent = agent
+            
             while True:
                 try:
                     user_input=console.input("\n[user]> [/user]").strip()
                     if not user_input:
                         continue
-
+                    
                     await self._process_message(user_input)
                 except KeyboardInterrupt:
                     console.input("\n[dim] Use /exit to quit. [/dim]")
@@ -35,13 +47,11 @@ class CLI:
                     break
         console.print("\n[dim] Goodbye! [/dim]")
 
-    def get_tool_kind(self,tool_name:str) ->str | None:
-        tool_kind=None,
-        tool =self.agent.tool_registry.get(tool_name)
-        if not tool:
-            tool_kind=None
-        tool_kind= tool.kind.value
-        return tool_kind
+    def get_tool_kind(self, tool_name: str) -> str | None:
+        tool = self.agent.session.tool_registry.get(tool_name)
+        if tool:
+            return tool.kind.value
+        return None
 
     async def _process_message(self,message:str) ->str | None:
         if self.agent is None:
@@ -64,7 +74,7 @@ class CLI:
 
             elif event.type == AgentEventType.TOOL_CALL_START:
                 tool_name= event.data.get("name", "Unknown")
-                tool=self.agent.tool_registry.get(tool_name)
+                tool=self.agent.session.tool_registry.get(tool_name)
                 
                 if not tool:
                     tool_kind=None
@@ -106,13 +116,24 @@ async def run(messages:list[dict[str,Any]],stream:bool=False):
 
 @click.command()
 @click.argument("prompt", required=False)
-def main(prompt:str| None):
-    cli= CLI()
-    messages=[
-            {"role":"system","content":"You are a helpful assistant."},  # read about cached tokens
-            {"role":"user","content": prompt}
-        ]
+@click.option("--cwd", "-c",help="Current working directory",
+              type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path))
+def main(prompt:str| None, cwd: Path):
+    try:
+        config= load_config(cwd=cwd)
+    except Exception as e:
+        console.print(f"[error]Config load error: {e}[/error] " )
+        sys.exit(1)
 
+    errors =config.validate()
+
+    if errors:
+        for error in errors:
+            console.print(f"[error]{error}[/error]")
+        sys.exit(1)
+    cli= CLI(config=config)
+
+    
     if prompt:
         result = asyncio.run(cli.run_single(message=prompt))
         if result is None:

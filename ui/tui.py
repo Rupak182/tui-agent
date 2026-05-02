@@ -10,6 +10,7 @@ from rich.theme import Theme
 from rich.rule import Rule
 from rich.table import Table
 from rich import box
+from config.config import Config
 from utils.path import display_path_rel_to_cwd
 from utils.text import truncate_text
 AGENT_THEME = Theme(
@@ -48,12 +49,12 @@ def get_console() -> Console:
     return _console
 
 class TUI:
-    def __init__(self,console: Console | None = None):
+    def __init__(self,config:Config, console: Console | None = None):
         self.console = console if console is not None else get_console()
         self._assistant_stream_open = False
         self._tool_args_by_call_id: dict[str,dict[str,Any]] = {}
-        self.cwd= Path.cwd()
-
+        self.config = config
+        self.cwd= self.config.cwd
     def begin_assistant(self)-> None:
         self.console.print()
 
@@ -156,6 +157,19 @@ class TUI:
         return start_line, "\n".join(code_lines)
 
 
+
+    def print_welcome(self, title: str, lines: list[str]) -> None:
+        body = "\n".join(lines)
+        self.console.print(
+            Panel(
+                Text(body, style="code"),
+                title=Text(title, style="highlight"),
+                title_align="left",
+                border_style="border",
+                box=box.ROUNDED,
+                padding=(1, 2),
+            )
+        )
 
 
     def _guess_language(self, path: str | None) -> str:

@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from config.config import Config
 from prompts.system import get_system_prompt
 from dataclasses import dataclass, field
 
@@ -25,25 +26,25 @@ class MessageItem:
         if self.tool_call_id:
             result["tool_call_id"] = self.tool_call_id
         
-        # if self.tool_calls:
-        #     result["tool_calls"] = self.tool_calls
+        if self.tool_calls:
+            result["tool_calls"] = self.tool_calls
         return result
 
 class ContextManager:
-    def __init__(self):
-        self._system_prompt = get_system_prompt()
+    def __init__(self,config:Config):
+        self._system_prompt = get_system_prompt(config=config)
         self._messages:list[MessageItem] = []
-        self._model_name="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
-    
+        self._model_name = config.model_name
+        self.config = config
 
     def add_user_message(self,content:str):
         self._messages.append(
             MessageItem(role="user", content=content, token_count=count_tokens(content, self._model_name))
         )
 
-    def add_assistant_message(self,content:str):
+    def add_assistant_message(self,content:str,tool_calls:list[dict[str,Any]]):
         self._messages.append(
-            MessageItem(role="assistant", content=content or "", token_count=count_tokens(content or "", self._model_name))
+            MessageItem(role="assistant", content=content or "", token_count=count_tokens(content or "", self._model_name), tool_calls=tool_calls or [])
         )
 
     def add_tool_result(self,tool_call_id:str, content:str)->None:

@@ -3,17 +3,19 @@ from typing import Any, AsyncGenerator
 
 from client.response import StreamEventType, TextDelta, TokenUsage,StreamEvent, ToolCall, ToolCallDelta, parse_tool_call_arguments
 from openai import APIError, AsyncOpenAI, RateLimitError
+from config.config import Config
 
 class LLMClient:
-    def __init__(self)->None:
+    def __init__(self,config:Config)->None:
         self._client: AsyncOpenAI |None =None
         self._max_retries = 3
+        self.config = config
     
     def get_client(self)->AsyncOpenAI:
         if self._client is None:
             self._client = AsyncOpenAI(
-                api_key="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",
-                base_url="https://openrouter.ai/api/v1/",
+                api_key=self.config.api_key,
+                base_url=self.config.base_url
             )
         return self._client
 
@@ -43,7 +45,7 @@ class LLMClient:
                               stream:bool=False)->AsyncGenerator[StreamEvent, None]  :
         client= self.get_client()
         kwargs={
-        "model":"openai/gpt-oss-120b:free",
+        "model":self.config.model_name,
         "messages":messages,
         "stream":stream
         }

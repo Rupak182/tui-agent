@@ -7,7 +7,7 @@ def get_tokenizer(model:str):
         return encoding.encode
     
 
-def count_tokens(text:str,model:str="gpt-3.5-turbo")->int:
+def count_tokens(text:str,model:str="gpt-4")->int:
     tokenizer = get_tokenizer(model)
 
     if tokenizer:
