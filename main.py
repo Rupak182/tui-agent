@@ -60,6 +60,7 @@ class CLI:
         assistant_steaming = False
         final_response = ""
         async for event in self.agent.run(message=message):
+            print(event)
             if event.type==AgentEventType.TEXT_DELTA:
                 content = event.data.get("content", "")
                 if not assistant_steaming:
@@ -97,7 +98,8 @@ class CLI:
                     event.data.get("output", ""),
                     event.data.get("error", None),
                     event.data.get("metadata"),
-                    event.data.get("truncated", False)
+                    event.data.get("truncated", False),
+                    event.data.get("diff", None)
                 )       
                 
 

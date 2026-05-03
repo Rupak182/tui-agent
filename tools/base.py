@@ -1,12 +1,12 @@
 from __future__ import annotations
 import abc
 from dataclasses import dataclass
+import difflib
 from enum import Enum
 from typing import Any
 from pydantic import BaseModel, Field, ValidationError
 from pydantic.json_schema import model_json_schema
 from pathlib import Path
-
 class ToolKind(Enum):
     READ = "read"
     WRITE = "write"
@@ -18,7 +18,7 @@ class ToolKind(Enum):
 
 
 @dataclass
-class ToolInvokation:
+class ToolInvocation:
    params:dict[str,Any]
    cwd:Path
 
@@ -29,6 +29,39 @@ class ToolConfirmation:
     params:dict[str,Any]
     description:str
 
+
+@dataclass
+class FileDiff:
+    path: Path
+    old_content:str
+    new_content:str
+
+    is_new_file:bool = False
+    is_deletion:bool = False
+
+    def to_diff(self)->str:
+        old_lines= self.old_content.splitlines(keepends=True)
+        new_lines= self.new_content.splitlines(keepends=True)
+
+        if old_lines and  not old_lines[-1].endswith("\n"):
+            old_lines[-1] += "\n"
+        
+        if new_lines and not new_lines[-1].endswith("\n"):
+            new_lines[-1] += "\n"
+        
+        old_name = "/dev/null" if self.is_new_file else f"{self.path}"
+        new_name = "/dev/null" if self.is_deletion else f"{self.path}"
+        diff = difflib.unified_diff(
+            old_lines,
+            new_lines,
+            fromfile=f'{old_name}',
+            tofile=f'{new_name}'
+        )
+
+        return "".join(diff)    
+
+
+
 @dataclass
 class ToolResult:
     success:bool
@@ -36,6 +69,7 @@ class ToolResult:
     error:str|None = None
     metadata:dict[str,Any]  = Field(default_factory=dict)
     truncated:bool = False
+    diff:FileDiff | None = None
 
     @classmethod
     def error_result(cls, error_message:str, **kwargs)->ToolResult:
@@ -65,7 +99,7 @@ class Tool(abc.ABC):
     
 
     @abc.abstractmethod
-    async def execute(self, invocation:ToolInvokation) -> ToolResult:
+    async def execute(self, invocation:ToolInvocation) -> ToolResult:
         pass
     
     def validate_params(self, params:dict[str,Any])-> list[str]:
@@ -91,7 +125,7 @@ class Tool(abc.ABC):
     def is_mutating(self,params:dict[str,Any])-> bool:
         return self.kind in {ToolKind.WRITE,ToolKind.SHELL,ToolKind.NETWORK,ToolKind.MEMORY}
     
-    async def get_confirmation(self,invokation:ToolInvokation)->ToolInvokation | None:
+    async def get_confirmation(self,invokation:ToolInvocation)->ToolInvocation | None:
         if not self.is_mutating(invokation.params):
             return None
         

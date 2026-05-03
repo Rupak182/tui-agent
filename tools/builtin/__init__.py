@@ -1,8 +1,9 @@
 from tools.builtin.read_file import ReadFileTool
-
+from tools.builtin.write_file import WriteFileTool
 __all__ = [
-    "ReadFileTool"
+    "ReadFileTool",
+    "WriteFileTool",
 ]
 
-def get_all_builtin_tools()->list[ReadFileTool]:
-    return [ReadFileTool]
+def get_all_builtin_tools()->list[ReadFileTool | WriteFileTool]:
+    return [ReadFileTool, WriteFileTool]

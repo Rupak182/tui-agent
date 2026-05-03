@@ -29,3 +29,10 @@ def is_binary_file(path:Path)->bool:
 
     except (OSError, IOError):
         return False
+    
+
+def ensure_parent_dir(path:str |Path)->Path:
+    path= Path(path)
+    path.parent.mkdir(parents=True,exist_ok=True)
+
+    return path

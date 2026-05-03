@@ -4,7 +4,7 @@ import logging
 from os import name
 from typing import Any
 from zipfile import Path
-from tools.base import Tool, ToolInvokation ,ToolResult
+from tools.base import Tool, ToolInvocation ,ToolResult
 from tools.builtin import ReadFileTool,get_all_builtin_tools
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class ToolRegistry:
             )
             return result
         
-        invocation = ToolInvokation(
+        invocation = ToolInvocation(
             params=params,
             cwd=cwd
         )

@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import Any, AsyncGenerator
+
 from agent.events import AgentEvent, AgentEventType
 from agent.session import Session
 from client.llm_client import LLMClient
 from client.response import StreamEventType, ToolCall
 from context.manager import ContextManager
-from tools.registry import create_default_registry  
 from pathlib import Path
 import json
 from client.response import ToolResultMessage

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from tools.base import Tool, ToolInvokation, ToolKind, ToolKind, ToolResult
+from tools.base import Tool, ToolInvocation, ToolKind, ToolKind, ToolResult
 from utils.path import is_binary_file, resolve_path
 from utils.text import count_tokens, truncate_text
 
@@ -26,7 +26,7 @@ class ReadFileTool(Tool):
     def schema(self) -> type[BaseModel]:
         return ReadFileParams
 
-    async def execute(self, invocation:ToolInvokation) -> ToolResult:
+    async def execute(self, invocation:ToolInvocation) -> ToolResult:
         try:
             params = ReadFileParams(**invocation.params)
             path = resolve_path(invocation.cwd, params.path)
