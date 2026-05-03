@@ -76,6 +76,7 @@ class TUI:
         _PREFERRED_ORDER={
             'read_file':['path','offset','limit'],
             'write_file':['path','create_directories','content'],
+            'edit':['path','replace_all','old_string','new_string'],
         }
 
         preferred = _PREFERRED_ORDER.get(tool_name, [])
@@ -103,7 +104,7 @@ class TUI:
                 if key in {'content','old_string','new_string'}:
                     line_count= len(value.splitlines()) or 0
                     byte_count= len(value.encode('utf-8',errors='replace'))
-                    value= f"<{line_count} lines, {byte_count} bytes>"
+                    value= f"<{line_count} line(s), {byte_count} bytes>"
                 
                 
 
@@ -293,7 +294,7 @@ class TUI:
                     )
                 )
 
-        elif name== "write_file" and success and diff:
+        elif name in {"write_file", "edit"} and success and diff:
             output_line= output.strip() if output.strip() else "Done."
             blocks.append(Text(output_line, style="muted"))
             diff_text= diff
