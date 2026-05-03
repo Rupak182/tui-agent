@@ -7,6 +7,8 @@ from typing import Any
 from pydantic import BaseModel, Field, ValidationError
 from pydantic.json_schema import model_json_schema
 from pathlib import Path
+
+from config.config import Config
 class ToolKind(Enum):
     READ = "read"
     WRITE = "write"
@@ -70,6 +72,7 @@ class ToolResult:
     metadata:dict[str,Any]  = Field(default_factory=dict)
     truncated:bool = False
     diff:FileDiff | None = None
+    exit_code:int | None = None
 
     @classmethod
     def error_result(cls, error_message:str, **kwargs)->ToolResult:
@@ -90,8 +93,8 @@ class Tool(abc.ABC):
     description:str ="Base Tool"
     kind:ToolKind=ToolKind.READ
 
-    def __init__(self):
-        pass
+    def __init__(self,config:Config)->None:
+        self.config = config
 
     @property
     def schema(self)->dict[str,Any] | type['BaseModel']:

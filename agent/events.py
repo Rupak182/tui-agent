@@ -68,7 +68,7 @@ class AgentEvent:
         )
     
     @classmethod
-    def tool_call_complete(cls, call_id:str, name:str,result:ToolResult):
+    def tool_call_complete(cls, call_id: str, name: str, result: ToolResult | None):
         return cls(
             type=AgentEventType.TOOL_CALL_COMPLETE,
           data={

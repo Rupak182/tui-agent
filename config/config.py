@@ -6,12 +6,18 @@ class ModelConfig(BaseModel):
     temperature:float= Field(1, ge=0.0, le=2.0, description="Sampling temperature for the model")
     context_window:int = 256_000
 
+class ShellEnvironmentPolicy(BaseModel):
+    ignore_default_excludes:bool=False
+    exclude_patterns: list[str] = Field(default_factory=lambda:['*KEY*','*SECRET*','*TOKEN*'])
+    set_vars:dict[str,str] = Field(default_factory=dict)
+
 
 class Config(BaseModel):
     model:ModelConfig= Field(default_factory=ModelConfig)
     cwd:Path= Field(default_factory=Path.cwd, description="Current working directory for the agent. Tool calls with relative paths will be resolved against this directory.")
     max_turns:int = 100
-    
+    shell_environment:ShellEnvironmentPolicy=Field(default_factory=ShellEnvironmentPolicy)
+
     developer_instructions:str |None= None
     user_instructions:str |None= None
     debug:bool = False
