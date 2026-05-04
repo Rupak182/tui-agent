@@ -1,0 +1,116 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #f0f2f5;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-container {
+    width: 95%;
+    max-width: 1200px;
+    height: 90vh;
+    background: #fff;
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 30%;
+    background: #ededed;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar-header {
+    padding: 1rem;
+    background: #075e54;
+    color: #fff;
+    text-align: center;
+}
+.contact-list {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+}
+.contact-list li {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+.contact-list li:hover {
+    background: #e0e0e0;
+}
+.contact-list li.active {
+    background: #c8e6c9;
+}
+
+/* Chat area */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.chat-header {
+    padding: 1rem;
+    background: #075e54;
+    color: #fff;
+}
+.messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    background: #f7f7f7;
+}
+.message {
+    max-width: 60%;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 15px;
+    clear: both;
+}
+.message.sent {
+    background: #dcf8c6;
+    margin-left: auto;
+    text-align: right;
+}
+.message.received {
+    background: #fff;
+    margin-right: auto;
+    text-align: left;
+    border: 1px solid #e0e0e0;
+}
+.chat-input {
+    display: flex;
+    padding: 0.5rem;
+    border-top: 1px solid #ddd;
+    background: #fafafa;
+}
+#messageInput {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    margin-right: 0.5rem;
+}
+#sendBtn {
+    padding: 0.5rem 1rem;
+    background: #075e54;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+#sendBtn:hover {
+    background: #0a7d68;
+}
