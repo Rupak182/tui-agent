@@ -457,8 +457,18 @@ class TUI:
                 )
             )
      
-            
-            
+        elif name=="todos" and success:
+            output_display=truncate_text(output,self.config.model_name,self.max_blob_tokens)
+
+            blocks.append(
+                Syntax(
+                    output_display,
+                    'text',
+                    theme="monokai",
+                    word_wrap=True,
+                )
+            )
+            # can make a table for better ui
 
         if error and not success:
             blocks.append(Text(error, style="error"))

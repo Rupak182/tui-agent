@@ -90,12 +90,14 @@ class LLMClient:
         finish_reason:str | None = None
         async for chunk in response:
             if hasattr(chunk,"usage") and chunk.usage:
-                usage = TokenUsage(
-                    prompt_tokens=chunk.usage.prompt_tokens,
-                    completion_tokens=chunk.usage.completion_tokens,
-                    total_tokens=chunk.usage.total_tokens,
-                    cached_tokens=chunk.usage.prompt_tokens_details.cached_tokens
-                )
+                usage_kwargs = {
+                    "prompt_tokens": chunk.usage.prompt_tokens,
+                    "completion_tokens": chunk.usage.completion_tokens,
+                    "total_tokens": chunk.usage.total_tokens,
+                }
+                if getattr(chunk.usage, "prompt_tokens_details", None) and chunk.usage.prompt_tokens_details.cached_tokens:
+                    usage_kwargs["cached_tokens"] = chunk.usage.prompt_tokens_details.cached_tokens
+                usage = TokenUsage(**usage_kwargs)
             if not chunk.choices:
                 continue
             choice = chunk.choices[0]
@@ -185,12 +187,14 @@ class LLMClient:
 
         usage = None
         if response.usage:
-            usage =TokenUsage(
-                prompt_tokens=response.usage.prompt_tokens,
-                completion_tokens=response.usage.completion_tokens,
-                total_tokens=response.usage.total_tokens,
-                cached_tokens=response.usage.prompt_tokens_details.cached_tokens
-            )
+            usage_kwargs = {
+                "prompt_tokens": response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens,
+            }
+            if getattr(response.usage, "prompt_tokens_details", None) and response.usage.prompt_tokens_details.cached_tokens:
+                usage_kwargs["cached_tokens"] = response.usage.prompt_tokens_details.cached_tokens
+            usage = TokenUsage(**usage_kwargs)
         return StreamEvent(
             type=StreamEventType.MESSAGE_COMPLETE,
             text_delta=text_delta,
