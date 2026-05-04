@@ -74,7 +74,8 @@ class GrepTool(Tool):
             if file_matches:
                 output_lines.append("")  #later join with \n
 
-            
+        if matches > 500:
+            output_lines.append(f"...(limited to 500 results)")
         if not output_lines:
             return ToolResult.success_result(
                 f"No matches found for pattern '{params.pattern}'",

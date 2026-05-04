@@ -79,7 +79,8 @@ class TUI:
             'edit':['path','replace_all','old_string','new_string'],
             'shell':['command','timeout','cwd'],
             'list_dir':['path','include_hidden'],
-            'grep':['path','case_insensitive','pattern']
+            'grep':['path','case_insensitive','pattern'],
+            'glob':['path','pattern'],
         }
 
         preferred = _PREFERRED_ORDER.get(tool_name, [])
@@ -383,7 +384,24 @@ class TUI:
                 )
             )
 
+        elif name=="glob" and success:
+            matches = metadata.get("matches")
+            files_searched = metadata.get("files_searched")
+
+            if isinstance(matches, int):
+                blocks.append(f"{matches} match{'es' if matches!=1 else ''}")
             
+            
+            output_display=truncate_text(output,self.config.model_name,self.max_blob_tokens)
+
+            blocks.append(
+                Syntax(
+                    output_display,
+                    'text',
+                    theme="monokai",
+                    word_wrap=True,
+                )
+            )
             
             
 
