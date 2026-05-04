@@ -69,28 +69,7 @@ class GlobTool(Tool):
             
 
 
-        
-    def find_files(self, search_path:Path)-> list[Path]:
-        files=[]
 
-        for root, dirs, filenames in os.walk(search_path):
-            dirs[:] = [
-                d
-                for d in dirs
-                if d not in {"node_modules", "__pycache__", ".git", ".venv", "venv"}
-            ]
-            for filename in filenames:
-                if filename.startswith('.'):
-                    continue
-                
-                filepath= Path(root) / filename
-                if not is_binary_file(filepath):
-                    files.append(filepath)
-
-                    if len(files) >= 500:
-                        return files
-        
-        return files
 
 
     

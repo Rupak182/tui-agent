@@ -1,3 +1,4 @@
+from importlib.metadata import metadata
 from os import name
 from pathlib import Path
 from typing import Any
@@ -402,9 +403,61 @@ class TUI:
                     word_wrap=True,
                 )
             )
+        
+        elif name=="web_search" and success:
+            results = metadata.get("results")
+            summary = []
+            if isinstance(results, int):
+                summary.append(f"{results} result{'s' if results!=1 else ''}")
+            query = args.get("query")
+            if isinstance(query, str) and query.strip():
+                summary.append(query)
             
-            
+            blocks.append(Text(" • ".join(summary), style="muted"))
 
+          
+            
+            output_display=truncate_text(output,self.config.model_name,self.max_blob_tokens)
+
+            blocks.append(
+                Syntax(
+                    output_display,
+                    'text',
+                    theme="monokai",
+                    word_wrap=True,
+                )
+            )
+            
+        elif name=="web_fetch" and success:
+            status_code = metadata.get("status_code")
+            content_length = metadata.get("content_length")
+            url= args.get("url")
+            summary=[]
+            if isinstance(status_code, int):
+                summary.append(str(status_code))
+
+            if isinstance(content_length, int):
+                summary.append(Text(f"{content_length} bytes"))
+
+            if isinstance(url, str) and url.strip():
+                summary.append(Text(url))
+
+            blocks.append(Text(" • ".join(summary), style="muted"))
+
+          
+            
+            output_display=truncate_text(output,self.config.model_name,self.max_blob_tokens)
+
+            blocks.append(
+                Syntax(
+                    output_display,
+                    'text',
+                    theme="monokai",
+                    word_wrap=True,
+                )
+            )
+     
+            
             
 
         if error and not success:
