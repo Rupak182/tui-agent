@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 from tomli import TOMLDecodeError
-from platformdirs import user_config_dir
+from platformdirs import user_config_dir, user_data_dir
 from config.config import Config
 import tomli
 from utils.errors import ConfigError
@@ -18,6 +18,8 @@ def get_config_dir()->Path:
 def _get_system_config_path()->Path:
     return get_config_dir() / CONFIG_FILE_NAME
 
+def get_data_dir()->Path:
+    return Path(user_data_dir('ai-agent'))
 
 
 def _get_agent_md_file(cwd:Path)->Path | None:

@@ -69,13 +69,3 @@ class TodosTool(Tool):
             
 
 
-        return ToolResult.success_result(
-            "\n".join(output_lines),
-            metadata={
-                "results": len(results),
-            },
-        )
-
-        
-
-    

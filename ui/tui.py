@@ -82,6 +82,8 @@ class TUI:
             'list_dir':['path','include_hidden'],
             'grep':['path','case_insensitive','pattern'],
             'glob':['path','pattern'],
+            'todos':['id','action','content'],
+            'memory':['action','key','value'],
         }
 
         preferred = _PREFERRED_ORDER.get(tool_name, [])
@@ -469,6 +471,35 @@ class TUI:
                 )
             )
             # can make a table for better ui
+
+        elif name=="memory" and success:
+            summary=[]
+            action = args.get("action")
+            key= args.get("key")
+            found= metadata.get("found") if isinstance(metadata, dict) else None
+            if isinstance(action, str) and action.strip():
+                summary.append(action)
+            
+            if isinstance(key, str) and key.strip():
+                summary.append(key)
+
+            if  isinstance(found, bool):
+                summary.append("found" if found else "not found")
+            
+            if summary:
+                blocks.append(Text(" • ".join(summary), style="muted"))
+            
+
+
+            output_display=truncate_text(output,self.config.model_name,self.max_blob_tokens)
+            blocks.append(
+                Syntax(
+                    output_display,
+                    'text',
+                    theme="monokai",
+                    word_wrap=True,
+                )
+            )
 
         if error and not success:
             blocks.append(Text(error, style="error"))
