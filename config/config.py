@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel,Field
 from pathlib import Path
 import os
@@ -21,7 +23,8 @@ class Config(BaseModel):
     developer_instructions:str |None= None
     user_instructions:str |None= None
     debug:bool = False
-
+    allowed_tools:list[str] | None = None
+    # subagent config 
 
     @property
     def api_key(self)->str|None:
@@ -58,3 +61,6 @@ class Config(BaseModel):
             errors.append(f"CWD '{self.cwd}' does not exist or is not a directory.")
         
         return errors
+    
+    def to_dict(self)->dict[str,Any]:
+        return self.model_dump(mode='json')

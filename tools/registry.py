@@ -6,11 +6,13 @@ from typing import Any
 from zipfile import Path
 from tools.base import Tool, ToolInvocation ,ToolResult
 from tools.builtin import ReadFileTool,get_all_builtin_tools
+from tools.subagents import SubAgentTool, SubAgentTool, get_default_subagent_definitions
 from config.config import Config
 logger = logging.getLogger(__name__)
 
 class ToolRegistry:
-    def __init__(self):
+    def __init__(self,config:Config):
+        self.config = config
         self._tools:dict[str,Tool] = {} 
     
     def register(self, tool:Tool):
@@ -34,6 +36,10 @@ class ToolRegistry:
         tools: list[Tool] = []
         for tool in self._tools.values():
             tools.append(tool)
+
+        if self.config.allowed_tools:
+            allowed_set=set(self.config.allowed_tools)
+            tools = [tool for tool in tools if tool.name in allowed_set]
         return tools
     
     def get(self, tool_name:str)->Tool | None:
@@ -78,8 +84,12 @@ class ToolRegistry:
 
       
 def create_default_registry(config:Config)->ToolRegistry:
-    registry = ToolRegistry()
+    registry = ToolRegistry(config=config)
     BUILTIN_TOOLS = [ReadFileTool]
     for tool_class in get_all_builtin_tools():
         registry.register(tool_class(config=config))
+
+    for subagent_def in get_default_subagent_definitions():
+        registry.register(SubAgentTool(config=config, definition=subagent_def))
+
     return registry
