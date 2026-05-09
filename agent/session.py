@@ -6,6 +6,7 @@ from client.llm_client import LLMClient
 from config.config import Config
 from config.loader import get_data_dir
 from context.manager import ContextManager
+from tools.discovery import ToolDiscoveryManager
 from tools.registry import create_default_registry
 import uuid
 
@@ -14,6 +15,8 @@ class Session:
         self.config = config
         self.client = LLMClient(config=config)
         self.tool_registry = create_default_registry(config=config)
+        self.discovery_manager = ToolDiscoveryManager(config=config, registry=self.tool_registry)
+        self.discovery_manager.discover_all()
         self.context_manager = ContextManager(config=config, user_memory=self.load_memory(),tools=self.tool_registry.get_tools())
         self.session_id = str(uuid.uuid4())
         self.created_at = datetime.now()
