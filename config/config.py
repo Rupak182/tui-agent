@@ -1,6 +1,7 @@
+from __future__ import annotations
 from typing import Any
 
-from pydantic import BaseModel,Field
+from pydantic import BaseModel,Field, model_validator
 from pathlib import Path
 import os
 class ModelConfig(BaseModel):
@@ -13,12 +14,38 @@ class ShellEnvironmentPolicy(BaseModel):
     exclude_patterns: list[str] = Field(default_factory=lambda:['*KEY*','*SECRET*','*TOKEN*'])
     set_vars:dict[str,str] = Field(default_factory=dict)
 
+class MCPServerConfig(BaseModel):
+    enabled:bool= True
+    startup_timeout_sec:int=10
 
+    
+    command:str | None = None
+    args:list[str] = Field(default_factory=list)
+    env:dict[str,str] = Field(default_factory=dict)
+    cwd:Path | None = None
+
+
+    #http/sse transport
+    url:str | None = None
+
+    @model_validator(mode='after')
+    def validate_transport(self)->MCPServerConfig:
+        has_command = self.command is not None
+        has_url = self.url is not None
+
+        if not has_command and not has_url:
+            raise ValueError("MCPServerConfig requires either a command or a url to be specified.")
+
+        if has_command and has_url:
+            raise ValueError("MCPServerConfig cannot have both command and url specified.")
+
+        return self
 class Config(BaseModel):
     model:ModelConfig= Field(default_factory=ModelConfig)
     cwd:Path= Field(default_factory=Path.cwd, description="Current working directory for the agent. Tool calls with relative paths will be resolved against this directory.")
     max_turns:int = 100
     shell_environment:ShellEnvironmentPolicy=Field(default_factory=ShellEnvironmentPolicy)
+    mcp_servers:dict[str,MCPServerConfig]=Field(default_factory=dict)
 
     developer_instructions:str |None= None
     user_instructions:str |None= None

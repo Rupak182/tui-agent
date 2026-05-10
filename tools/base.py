@@ -142,15 +142,15 @@ class Tool(abc.ABC):
     def to_openai_schema(self)->dict[str,Any]:
         schema = self.schema
         if isinstance(schema, type) and issubclass(schema, BaseModel):
-            json_schemma= model_json_schema(schema,mode="serialization")
+            json_schema= model_json_schema(schema,mode="serialization")
             
             return {
                 'name': self.name,
                 'description': self.description,
                 'parameters': {
                     'type': 'object',
-                    'properties': json_schemma.get("properties", {}),
-                    'required': json_schemma.get("required", []),
+                    'properties': json_schema.get("properties", {}),
+                    'required': json_schema.get("required", []),
                 }
             }
         

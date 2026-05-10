@@ -100,3 +100,15 @@ def load_config(cwd: Path | None = None) -> Config:
         return config
     except Exception as e:
         raise ConfigError(f"Invalid configuration: {e}") from e
+
+
+"""
+{
+    "mcp_servers": {
+        "filesystem": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-filesystem", ...]
+        }
+    }
+}
+"""

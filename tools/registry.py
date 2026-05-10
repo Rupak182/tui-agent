@@ -1,7 +1,6 @@
     
 
 import logging
-from os import name
 from typing import Any
 from zipfile import Path
 from tools.base import Tool, ToolInvocation ,ToolResult
@@ -14,6 +13,7 @@ class ToolRegistry:
     def __init__(self,config:Config):
         self.config = config
         self._tools:dict[str,Tool] = {} 
+        self._mcp_tools: dict[str,Tool] = {} 
     
     def register(self, tool:Tool):
         if tool.name in self._tools:
@@ -21,6 +21,13 @@ class ToolRegistry:
 
         self._tools[tool.name] = tool
         logger.debug(f"Registered tool: {tool.name}")
+
+    def register_mcp_tool(self, tool:Tool):
+        if tool.name in self._mcp_tools:
+            logger.warning(f"Overwriting existing MCP tool: {tool.name}")
+
+        self._mcp_tools[tool.name] = tool
+        logger.debug(f"Registered MCP tool: {tool.name}")
 
     def unregister(self, tool_name:str):
         if tool_name in self._tools:
@@ -36,6 +43,8 @@ class ToolRegistry:
         tools: list[Tool] = []
         for tool in self._tools.values():
             tools.append(tool)
+        for tool in self._mcp_tools.values():
+            tools.append(tool)
 
         if self.config.allowed_tools:
             allowed_set=set(self.config.allowed_tools)
@@ -43,7 +52,11 @@ class ToolRegistry:
         return tools
     
     def get(self, tool_name:str)->Tool | None:
-        return self._tools.get(tool_name)
+        if tool_name in self._tools:
+            return self._tools[tool_name]
+        elif tool_name in self._mcp_tools:
+            return self._mcp_tools[tool_name]
+        return None
 
     async def invoke(self,name:str,params:dict[str,Any],cwd:Path)->ToolResult:
         tool = self.get(name)
