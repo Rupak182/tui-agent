@@ -1,6 +1,6 @@
 from __future__ import annotations
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import difflib
 from enum import Enum
 from typing import Any
@@ -30,6 +30,11 @@ class ToolConfirmation:
     tool_name:str
     params:dict[str,Any]
     description:str
+
+    diff:FileDiff | None = None
+    affected_paths:list[Path] = field(default_factory=list)
+    command:str | None = None
+    is_dangerous:bool = False
 
 
 @dataclass
@@ -69,7 +74,7 @@ class ToolResult:
     success:bool
     output:str
     error:str|None = None
-    metadata:dict[str,Any]  = Field(default_factory=dict)
+    metadata:dict[str,Any]  = field(default_factory=dict)
     truncated:bool = False
     diff:FileDiff | None = None
     exit_code:int | None = None
@@ -128,13 +133,13 @@ class Tool(abc.ABC):
     def is_mutating(self,params:dict[str,Any])-> bool:
         return self.kind in {ToolKind.WRITE,ToolKind.SHELL,ToolKind.NETWORK,ToolKind.MEMORY}
     
-    async def get_confirmation(self,invokation:ToolInvocation)->ToolInvocation | None:
-        if not self.is_mutating(invokation.params):
+    def get_confirmation(self,invocation:ToolInvocation)->ToolConfirmation | None:
+        if not self.is_mutating(invocation.params):
             return None
         
         return ToolConfirmation(
             tool_name=self.name,
-            params=invokation.params,
+            params=invocation.params,
             description=f"Execute {self.name}"
         )
     

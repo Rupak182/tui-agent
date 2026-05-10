@@ -1,9 +1,21 @@
 from __future__ import annotations
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel,Field, model_validator
 from pathlib import Path
 import os
+
+class ApprovalPolicy(str,Enum):
+    ON_REQUEST= "on_request"
+    ON_FAILURE= "on_failure"
+    AUTO= "auto"
+    AUTO_EDIT= "auto_edit"
+    NEVER= "never"
+    YOLO= "yolo"
+    
+
+
 class ModelConfig(BaseModel):
     name:str= Field("nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", description="Model name to use for the agent")
     temperature:float= Field(1, ge=0.0, le=2.0, description="Sampling temperature for the model")
@@ -44,6 +56,7 @@ class Config(BaseModel):
     model:ModelConfig= Field(default_factory=ModelConfig)
     cwd:Path= Field(default_factory=Path.cwd, description="Current working directory for the agent. Tool calls with relative paths will be resolved against this directory.")
     max_turns:int = 100
+    approval:ApprovalPolicy= ApprovalPolicy.ON_REQUEST
     shell_environment:ShellEnvironmentPolicy=Field(default_factory=ShellEnvironmentPolicy)
     mcp_servers:dict[str,MCPServerConfig]=Field(default_factory=dict)
 

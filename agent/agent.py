@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Callable
 
 from agent.events import AgentEvent, AgentEventType
 from agent.session import Session
@@ -10,10 +10,17 @@ from pathlib import Path
 import json
 from client.response import ToolResultMessage
 from config.config import Config
+from tools.base import ToolConfirmation
+from tools.base import ToolConfirmation
 class Agent:
-    def __init__(self,config:Config)->None:
+    def __init__(
+        self,
+        config: Config,
+        confirmation_callback: Callable[[ToolConfirmation], bool] | None = None,
+    ):        
         self.config = config
         self.session: Session | None = Session(config=config)
+        self.session.approval_manager.confirmation_callback = confirmation_callback
 
     async def run(self, message: str) -> AsyncGenerator[AgentEvent, None]:
         yield AgentEvent.agent_start(message=message)
@@ -109,7 +116,8 @@ class Agent:
                 tool_result = await self.session.tool_registry.invoke(
                     name=tool_call.name,
                     params=tool_call.arguments,
-                    cwd=self.session.config.cwd
+                    cwd=self.session.config.cwd,
+                    approval_manager=self.session.approval_manager
                 )
 
                 yield AgentEvent.tool_call_complete(
