@@ -5,6 +5,7 @@ import json
 from client.llm_client import LLMClient
 from config.config import Config
 from config.loader import get_data_dir
+from context.compaction import ChatComapctor
 from context.manager import ContextManager
 from tools.discovery import ToolDiscoveryManager
 from tools.mcp.mcp_manager import MCPManager
@@ -18,7 +19,7 @@ class Session:
         self.tool_registry = create_default_registry(config=config)
         self.discovery_manager = ToolDiscoveryManager(config=config, registry=self.tool_registry)
         self.mcp_manager = MCPManager(config=config)
-    
+        self.chat_compactor = ChatComapctor(client=self.client)
         self.context_manager: ContextManager|None = None
         self.session_id = str(uuid.uuid4())
         self.created_at = datetime.now()

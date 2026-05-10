@@ -30,11 +30,18 @@ class TokenUsage:
 
 
     def __add__(self, other:TokenUsage)->TokenUsage:
+        # Treat missing cached tokens as 0; preserve None if both are None.
+        cached_left = self.cached_tokens
+        cached_right = other.cached_tokens
+        if cached_left is None and cached_right is None:
+            cached_total = None
+        else:
+            cached_total = (cached_left or 0) + (cached_right or 0)
         return TokenUsage(
             prompt_tokens=self.prompt_tokens + other.prompt_tokens,
             completion_tokens=self.completion_tokens + other.completion_tokens,
             total_tokens=self.total_tokens + other.total_tokens,
-            cached_tokens=self.cached_tokens + other.cached_tokens
+            cached_tokens=cached_total
         )
 
 

@@ -4,7 +4,7 @@ from typing import Any, AsyncGenerator
 from agent.events import AgentEvent, AgentEventType
 from agent.session import Session
 from client.llm_client import LLMClient
-from client.response import StreamEventType, ToolCall
+from client.response import StreamEventType, TokenUsage, ToolCall
 from context.manager import ContextManager
 from pathlib import Path
 import json
@@ -36,6 +36,22 @@ class Agent:
             response_text = ""
             tool_schemas= self.session.tool_registry.get_schemas()
             tool_calls:list[ToolCall] = []
+
+            if self.session.context_manager.needs_compression():
+                summary,usage= await self.session.chat_compactor.compress(self.session.context_manager)
+
+                if summary:
+                    self.session.context_manager.replace_with_summary(summary)
+                    self.session.context_manager.add_usage(usage) #approx
+                    self.session.context_manager.set_latest_usage(usage)
+
+
+
+            usage: TokenUsage | None = None
+
+
+
+
             async for event in self.session.client.chat_completion(
             self.session.context_manager.get_messages(),
             tools=tool_schemas if tool_schemas else None,
@@ -54,6 +70,9 @@ class Agent:
                 elif event.type == StreamEventType.ERROR:
                     yield AgentEvent.agent_error(error=event.error) or "Unknown error"
 
+                elif event.type == StreamEventType.MESSAGE_COMPLETE:
+                    usage = event.usage
+                    
             self.session.context_manager.add_assistant_message(
                 response_text or None,
                 [
@@ -72,9 +91,13 @@ class Agent:
             if response_text:
                 yield AgentEvent.text_complete(content=response_text)
 
+            if usage:
+                self.session.context_manager.set_latest_usage(usage)
+                self.session.context_manager.add_usage(usage)
+
             if not tool_calls:
                 return
-
+            
             tool_call_results: list[ToolResultMessage] = []
             for tool_call in tool_calls:
                 yield AgentEvent.tool_call_start(
@@ -108,7 +131,8 @@ class Agent:
                     tool_result.tool_call_id,
                     tool_result.content,
                 )
-                
+
+
         yield AgentEvent.agent_error(f'Maximum number of turns ({self.config.max_turns}) reached for the conversation')
 
 

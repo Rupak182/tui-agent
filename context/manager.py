@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from client.response import TokenUsage
 from config.config import Config
 from prompts.system import get_system_prompt
 from dataclasses import dataclass, field
@@ -37,6 +38,9 @@ class ContextManager:
         self._messages:list[MessageItem] = []
         self._model_name = config.model_name
         self.config = config
+        self._latest_usage: TokenUsage = TokenUsage()
+        self._total_usage: TokenUsage = TokenUsage()
+
 
     def add_user_message(self,content:str):
         self._messages.append(
@@ -57,6 +61,15 @@ class ContextManager:
         )
         self._messages.append(item)
 
+
+    def needs_compression(self)->bool:
+        context_limit=self.config.model.context_window
+
+        current_tokens= self._latest_usage.total_tokens
+
+        return current_tokens >= context_limit * 0.8
+
+
     def get_messages(self)->list[dict[str,Any]]:
         messages = []
 
@@ -66,3 +79,36 @@ class ContextManager:
         for item in self._messages:
             messages.append(item.to_dict())
         return messages
+    
+    def set_latest_usage(self, usage:TokenUsage):
+        self._latest_usage = usage
+
+    def add_usage(self, usage:TokenUsage):
+        self._total_usage += usage
+
+
+    
+    def replace_with_summary(self, summary:str):
+        self._messages = []
+
+
+        continuation_content = f"""# Context Restoration (Previous Session Compacted)
+
+        The previous conversation was compacted due to context length limits. Below is a detailed summary of the work done so far. 
+
+        **CRITICAL: Actions listed under "COMPLETED ACTIONS" are already done. DO NOT repeat them.**
+
+        ---
+
+        {summary}
+
+        ---
+
+        Resume work from where we left off. Focus ONLY on the remaining tasks."""
+
+        summary_item = MessageItem(
+            role="user",
+            content=continuation_content,
+            token_count=count_tokens(continuation_content, self._model_name),
+        )
+        self._messages.append(summary_item)
