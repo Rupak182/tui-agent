@@ -33,6 +33,7 @@ class Agent:
 
         for turn_num in range(max_turns):
             self.session.increment_turn()
+            self.session.context_manager.prune_tool_outputs()
             response_text = ""
             tool_schemas= self.session.tool_registry.get_schemas()
             tool_calls:list[ToolCall] = []
@@ -131,6 +132,8 @@ class Agent:
                     tool_result.tool_call_id,
                     tool_result.content,
                 )
+            
+
 
 
         yield AgentEvent.agent_error(f'Maximum number of turns ({self.config.max_turns}) reached for the conversation')
