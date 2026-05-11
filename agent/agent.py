@@ -10,6 +10,7 @@ from pathlib import Path
 import json
 from client.response import ToolResultMessage
 from config.config import Config
+from prompts.system import create_loop_breaker_prompt
 from tools.base import ToolConfirmation
 from tools.base import ToolConfirmation
 class Agent:
@@ -100,6 +101,7 @@ class Agent:
 
             if response_text:
                 yield AgentEvent.text_complete(content=response_text)
+                self.session.loop_detector.record_action("response", text=response_text)
 
             if usage:
                 self.session.context_manager.set_latest_usage(usage)
@@ -115,6 +117,10 @@ class Agent:
                     name=tool_call.name,
                     arguments=tool_call.arguments
                 )
+                self.session.loop_detector.record_action("tool_call", args=tool_call.arguments)
+
+               
+
                 tool_result = await self.session.tool_registry.invoke(
                     name=tool_call.name,
                     params=tool_call.arguments,
@@ -144,6 +150,12 @@ class Agent:
                     tool_result.content,
                 )
             
+            loop_detection=self.session.loop_detector.check_for_loop()
+
+            if loop_detection:
+                loop_prompt = create_loop_breaker_prompt(loop_detection)
+                self.session.context_manager.add_user_message(loop_prompt)
+                      
 
 
 
