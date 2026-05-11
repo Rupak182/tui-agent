@@ -23,6 +23,7 @@ class Agent:
         self.session.approval_manager.confirmation_callback = confirmation_callback
 
     async def run(self, message: str) -> AsyncGenerator[AgentEvent, None]:
+        await self.session.hook_system.trigger_before_agent(user_message=message)
         yield AgentEvent.agent_start(message=message)
         # ADD user message to context
         self.session.context_manager.add_user_message(message)
@@ -32,6 +33,7 @@ class Agent:
 
             if event.type == AgentEventType.TEXT_COMPLETE:
                 final_response = event.data.get("content", "") if event.data else ""
+                await self.session.hook_system.trigger_after_agent(user_message=message, agent_response=final_response)
         yield AgentEvent.agent_end(response=final_response, usage=None)  # You can pass actual response and usage if available
 
 
@@ -117,6 +119,7 @@ class Agent:
                     name=tool_call.name,
                     params=tool_call.arguments,
                     cwd=self.session.config.cwd,
+                    hook_system=self.session.hook_system,
                     approval_manager=self.session.approval_manager
                 )
 

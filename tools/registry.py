@@ -2,6 +2,8 @@
 
 import logging
 from typing import Any
+from unicodedata import name
+from hooks.hooks_system import HookSystem
 from zipfile import Path
 from tools.base import Tool, ToolInvocation ,ToolResult
 from tools.builtin import ReadFileTool,get_all_builtin_tools
@@ -60,14 +62,14 @@ class ToolRegistry:
             return self._mcp_tools[tool_name]
         return None
 
-    async def invoke(self,name:str,params:dict[str,Any],cwd:Path,approval_manager:ApprovalManager|None= None)->ToolResult:
+    async def invoke(self,name:str,params:dict[str,Any],cwd:Path,hook_system:HookSystem,approval_manager:ApprovalManager|None= None)->ToolResult:
         tool = self.get(name)
         if tool is None:    
             result = ToolResult.error_result(
                 f"Unknown tool: {name}",
                 metadata={"tool_name": name},
             )        
-
+            await hook_system.after_tool(tool_name=name,tool_params=params,tool_result=result)
             return result
     
         validation_errors= tool.validate_params(params)
@@ -80,8 +82,9 @@ class ToolRegistry:
                     "validation_errors": validation_errors,
                 },
             )
+            await hook_system.after_tool(tool_name=name,tool_params=params,tool_result=result)
             return result
-        
+        await hook_system.before_tool(tool_name=name, tool_params=params)
         invocation = ToolInvocation(
             params=params,
             cwd=cwd
@@ -100,26 +103,31 @@ class ToolRegistry:
 
                 decision = await approval_manager.check_approval(context)
                 if decision ==ApprovalDecision.REJECTED:
-                    return ToolResult.error_result(
+                    result= ToolResult.error_result(
                             "Operation rejected by safety policy"
                     )
-                
+                    await hook_system.after_tool(tool_name=name,tool_params=params,tool_result=result)
+                    return result
                 if decision == ApprovalDecision.NEEDS_CONFIRMATION:
                     approved= await approval_manager.request_confirmation(confirmation)
 
                     if not approved:
-                        return ToolResult.error_result("User rejected the operation")
-                        
+                        result= ToolResult.error_result("User rejected the operation")
+                        await hook_system.after_tool(tool_name=name,tool_params=params,tool_result=result)
+                        return result
         try:
 
             result = await tool.execute(invocation)
+            await hook_system.after_tool(tool_name=name,tool_params=params,tool_result=result)
             return result
         except Exception as e:
             logger.exception(f"Error executing tool {name}: {e}")
-            return ToolResult.error_result(
+            result = ToolResult.error_result(
                 f"Error executing tool: {str(e)}",
                 metadata={"tool_name": name},
             )
+            await hook_system.after_tool(tool_name=name,tool_params=params,tool_result=result)
+            return result
         
 
       
