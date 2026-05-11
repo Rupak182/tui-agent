@@ -1,14 +1,17 @@
 from email import message
 import sys
 from typing import Any
+from agent import session
 from agent.agent import Agent, AgentEventType
+from agent.peristence import PersistenceManager, SessionSnapshot
+from agent.session import Session
 from client.llm_client import LLMClient
 import asyncio
 import click
 from pathlib import Path
 from ui.tui import TUI, get_console
 from config.loader import load_config
-from config.config import Config
+from config.config import ApprovalPolicy, Config
 console = get_console()
 class CLI:
     def __init__(self,config:Config):
@@ -39,6 +42,12 @@ class CLI:
                     user_input=console.input("\n[user]> [/user]").strip()
                     if not user_input:
                         continue
+
+                    if user_input.startswith("/"):
+                        should_continue=await self._handle_command(user_input)
+                        if should_continue==False:
+                            break
+                        continue
                     
                     await self._process_message(user_input)
                 except KeyboardInterrupt:
@@ -46,6 +55,226 @@ class CLI:
                 except EOFError:
                     break
         console.print("\n[dim] Goodbye! [/dim]")
+
+
+    async def _handle_command(self,command:str)->bool:
+        cmd= command.lower()
+        parts= command.split(maxsplit=1)
+        cmd_name= parts[0]
+        cmd_args= parts[1] if len(parts)>1 else ""
+        if cmd_name=="/exit" or cmd_name=="/quit":
+            return False    
+        
+        elif cmd_name=="/help":
+            self.tui.show_help()
+        
+        elif cmd_name=="/clear":
+            self.agent.session.context_manager.clear()
+            self.agent.session.loop_detector.clear()
+            console.print("[success]Conversation cleared [/success]")
+
+        elif cmd_name=="/config":
+            console.print("\n[bold]Current Configuration[/bold]")
+            console.print(f"  Model: {self.config.model_name}")
+            console.print(f"  Temperature: {self.config.temperature}")
+            console.print(f"  Approval: {self.config.approval.value}")
+            console.print(f"  Working Dir: {self.config.cwd}")
+            console.print(f"  Max Turns: {self.config.max_turns}")
+            console.print(f"  Hooks Enabled: {self.config.hooks_enabled}")
+
+        elif cmd_name=="/model":
+            if cmd_args:
+                self.config.model_name= cmd_args
+                console.print(f"[success]Model changed to: {cmd_args} [/success]")
+            else:
+                console.print(f"Current model: {self.config.model_name}")
+        
+        elif cmd_name=="/approval":
+            if cmd_args:
+                try:
+                    approval = ApprovalPolicy(cmd_args)  # validate
+                    self.config.approval = approval
+                    console.print(f"[success]Approval changed to: {cmd_args} [/success]")
+                except:
+                    console.print(
+                        f"[error]Incorrect approval policy: {cmd_args} [/error]"
+                    )
+                    console.print(
+                        f"Valid options: {', '.join(p for p in ApprovalPolicy)}"
+                    )
+            else:
+                console.print(f"Current approval: {self.config.approval.value}")
+
+
+        elif cmd_name=="/tools":
+            tools= self.agent.session.tool_registry.get_tools()
+            console.print(f"\n[bold]Available Tools {len(tools)}[/bold]")
+            for tool in tools:
+                console.print(f"  • {tool.name}")
+        
+        elif cmd_name == "/mcp":
+            mcp_servers = self.agent.session.mcp_manager.get_all_servers()
+            console.print(f"\n[bold]MCP Servers ({len(mcp_servers)}) [/bold]")
+            for server in mcp_servers:
+                status = server["status"]
+                status_color = "green" if status == "connected" else "red"
+                console.print(
+                    f"  • {server['name']}: [{status_color}]{status}[/{status_color}] ({server['tools']} tools)"
+                )
+
+        elif cmd_name=="/stats":
+            stats= self.agent.session.get_stats()
+            console.print("\n[bold]Session Stats[/bold]")
+            for k,v in stats.items():
+                console.print(f"  {k}: {v}")
+            
+        elif cmd_name=="/save":
+            persistence_manager= PersistenceManager()
+            session_snapshot= SessionSnapshot(
+                session_id=self.agent.session.session_id,
+                created_at=self.agent.session.created_at,
+                updated_at=self.agent.session.updated_at,
+                turn_count=self.agent.session.turn_count,
+                messages=self.agent.session.context_manager.get_messages(),
+                total_usage=self.agent.session.context_manager.total_usage,
+                latest_usage=self.agent.session.context_manager.latest_usage
+            )
+
+            persistence_manager.save_session(session_snapshot)
+
+            console.print(
+                f"[success]Session saved: {self.agent.session.session_id}[/success]"
+            )
+
+
+        elif cmd_name=="/checkpoint":
+            persistence_manager= PersistenceManager()
+            session_snapshot= SessionSnapshot(
+                session_id=self.agent.session.session_id,
+                created_at=self.agent.session.created_at,
+                updated_at=self.agent.session.updated_at,
+                turn_count=self.agent.session.turn_count,
+                messages=self.agent.session.context_manager.get_messages(),
+                total_usage=self.agent.session.context_manager.total_usage,
+                latest_usage=self.agent.session.context_manager.latest_usage
+            )
+
+            checkpoint_id = persistence_manager.save_checkpoint(self.agent.session.session_id, session_snapshot)
+
+            console.print(
+                f"[success]Checkpoint created: {checkpoint_id}[/success]"
+            )
+        
+        
+        elif cmd_name=="/sessions":
+            persistence_manager= PersistenceManager()
+           
+            sessions= persistence_manager.list_sessions()
+            console.print("\n[bold]Saved Sessions[/bold]")
+            for s in sessions:
+                console.print(
+                    f"  • {s['session_id']} (turns: {s['turn_count']}, updated: {s['updated_at']})"
+         
+               )
+                
+
+                    
+        elif cmd_name=="/resume":
+            if not cmd_args:
+                console.print(f"[error]Usage: /resume <session_id> [/error]")
+
+            else:
+                persistence_manager= PersistenceManager()
+                snapshot= persistence_manager.load_session(cmd_args)
+                if not snapshot:
+                    console.print(f"[error]Session not found: {cmd_args}[/error]")
+                else:
+                    session=Session(
+                        config=self.config,
+                    )
+                    await session.initialize()
+                    session.session_id = snapshot.session_id
+                    session.created_at = snapshot.created_at
+                    session.updated_at = snapshot.updated_at
+                    session.turn_count = snapshot.turn_count
+                    session.context_manager.total_usage = snapshot.total_usage
+                    session.context_manager.latest_usage = snapshot.latest_usage
+                    
+
+                    for msg in snapshot.messages:
+                        if msg.get("role")=="system":
+                              continue
+                        if msg.get("role")=="user":
+                            session.context_manager.add_user_message(msg.get("content",""))
+                        
+                        elif msg.get("role")=="assistant":
+                            session.context_manager.add_assistant_message(
+                                content=msg.get("content",""),
+                                tool_calls= msg.get("tool_calls",[])
+                            )
+                        elif msg.get("role")=="tool":
+                            session.context_manager.add_tool_result(
+                                tool_call_id= msg.get("tool_call_id",""),
+                                content= msg.get("content","")
+                            )
+                    await self.agent.session.client.close()
+                    await self.agent.session.mcp_manager.shutdown()
+                    self.agent.session=session
+                    console.print(
+                        f"[success]Resumed session: {session.session_id}[/success]"
+                    )
+                
+
+        elif cmd_name=="/restore":
+            if not cmd_args:
+                console.print(f"[error]Usage: /restore <checkpoint_id> [/error]")
+
+            else:
+                persistence_manager= PersistenceManager()
+                snapshot= persistence_manager.load_checkpoint(cmd_args)
+                if not snapshot:
+                    console.print(f"[error]Checkpoint not found: {cmd_args}[/error]")
+                else:
+                    session=Session(
+                        config=self.config,
+                    )
+                    await session.initialize()
+                    session.session_id = snapshot.session_id
+                    session.created_at = snapshot.created_at
+                    session.updated_at = snapshot.updated_at
+                    session.turn_count = snapshot.turn_count
+                    session.context_manager.total_usage = snapshot.total_usage
+                    session.context_manager.latest_usage = snapshot.latest_usage
+                    
+
+                    for msg in snapshot.messages:
+                        if msg.get("role")=="system":
+                              continue
+                        if msg.get("role")=="user":
+                            session.context_manager.add_user_message(msg.get("content",""))
+                        
+                        elif msg.get("role")=="assistant":
+                            session.context_manager.add_assistant_message(
+                                content=msg.get("content",""),
+                                tool_calls= msg.get("tool_calls",[])
+                            )
+                        elif msg.get("role")=="tool":
+                            session.context_manager.add_tool_result(
+                                tool_call_id= msg.get("tool_call_id",""),
+                                content= msg.get("content","")
+                            )
+                    await self.agent.session.client.close()
+                    await self.agent.session.mcp_manager.shutdown()
+                    self.agent.session=session
+                    console.print(
+                        f"[success]Resumed session: {session.session_id}, checkpoint: {cmd_args}[/success]"
+                    )
+        else:
+            console.print(f"[error]Unknown command: {cmd_name}[/error]")
+        
+        return True
+        
+
 
     def get_tool_kind(self, tool_name: str) -> str | None:
         tool = self.agent.session.tool_registry.get(tool_name)

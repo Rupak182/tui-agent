@@ -23,3 +23,31 @@
 [HOOK] {"timestamp": "2026-05-11T09:19:24.278366", "trigger": "before_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "shell", "user_message": null, "error": null}
 [HOOK] {"timestamp": "2026-05-11T09:19:24.352118", "trigger": "after_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "shell", "user_message": null, "error": null}
 [HOOK] {"timestamp": "2026-05-11T09:19:31.853465", "trigger": "before_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "shell", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-05-11T10:33:27.263803", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hey whats going on", "error": null}
+[HOOK] {"timestamp": "2026-05-11T10:33:50.831478", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "what did i say previously", "error": null}
+[HOOK] {"timestamp": "2026-05-11T10:42:50.948455", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "clear", "error": null}
+[HOOK] {"timestamp": "2026-05-11T10:42:52.947326", "trigger": "before_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "todos", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-05-11T10:42:53.004966", "trigger": "after_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "todos", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-05-11T10:55:09.272744", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-05-11T10:55:55.052112", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-05-11T11:50:26.334224", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hey how is it going", "error": null}
+[HOOK] {"timestamp": "2026-05-11T11:50:31.148510", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "are you doing good", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:11:18.156785", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hhey how is it going", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:33:50.978537", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "resume  d42e9519-5421-4312-87e1-97e0a5411a73", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:36:47.346772", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "what did i said you previously", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:46:53.191134", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "what can you do", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:47:56.848195", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:48:34.248362", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:48:40.079575", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "what are you doing", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:49:15.769002", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:49:48.340260", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:49:52.391040", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "how are you", "error": null}
+[HOOK] {"timestamp": "2026-05-11T12:52:35.995793", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "what did i told earler", "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:04:32.741600", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "ab79b1a6-de89-404a-96a0-cef0dc5fa9e0_20260511_125903", "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:04:33.930260", "trigger": "before_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "list_dir", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:04:33.954234", "trigger": "after_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "list_dir", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:07:13.902356", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "restore checkpoint_id", "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:07:43.341134", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "restore ab79b1a6-de89-404a-96a0-cef0dc5fa9e0_20260511_125903", "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:07:44.700864", "trigger": "before_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "glob", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:07:44.785382", "trigger": "after_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "glob", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-05-11T13:08:14.790175", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "what did i said earlier", "error": null}

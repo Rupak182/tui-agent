@@ -104,7 +104,7 @@ class Agent:
                 self.session.loop_detector.record_action("response", text=response_text)
 
             if usage:
-                self.session.context_manager.set_latest_usage(usage)
+                self.session.context_manager.latest_usage = usage
                 self.session.context_manager.add_usage(usage)
 
             if not tool_calls:

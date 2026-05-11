@@ -42,8 +42,8 @@ class ContextManager:
         self._messages:list[MessageItem] = []
         self._model_name = config.model_name
         self.config = config
-        self._latest_usage: TokenUsage = TokenUsage()
-        self._total_usage: TokenUsage = TokenUsage()
+        self.latest_usage: TokenUsage = TokenUsage()
+        self.total_usage: TokenUsage = TokenUsage()
 
     def add_user_message(self,content:str):
         self._messages.append(
@@ -68,7 +68,7 @@ class ContextManager:
     def needs_compression(self)->bool:
         context_limit=self.config.model.context_window
 
-        current_tokens= self._latest_usage.total_tokens
+        current_tokens= self.latest_usage.total_tokens
 
         return current_tokens >= context_limit * 0.8
 
@@ -83,11 +83,11 @@ class ContextManager:
             messages.append(item.to_dict())
         return messages
     
-    def set_latest_usage(self, usage:TokenUsage):
-        self._latest_usage = usage
+    def setlatest_usage(self, usage:TokenUsage):
+        self.latest_usage = usage
 
     def add_usage(self, usage:TokenUsage):
-        self._total_usage += usage
+        self.total_usage += usage
 
 
     
@@ -149,6 +149,15 @@ class ContextManager:
             pruned_count += 1
 
         return pruned_count
+    
+    def clear(self)->None:
+        self._messages.clear()
+
+    
+    @property
+    def message_count(self)->int:
+        return len(self._messages)
+    
 
 
                     

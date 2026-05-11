@@ -1,6 +1,7 @@
 
 import asyncio
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -62,3 +63,24 @@ class MCPManager:
                 )
                 tool_registry.register_mcp_tool(mcp_tool)
                 count += 1
+
+        
+        
+    def get_all_servers(self)->list[dict[str,Any]]:
+            servers=[]
+            for name, client in self._clients.items():
+                server_info={
+                    "name": name,
+                    "status": client.status.value,
+                    "tools": len(client.tools)
+                }
+                servers.append(server_info)
+            return servers
+    
+    async def shutdown(self) -> None:
+        disconnection_tasks = [client.disconnect() for client in self._clients.values()]
+
+        await asyncio.gather(*disconnection_tasks, return_exceptions=True)
+
+        self._clients.clear()
+        self._initialized = False
