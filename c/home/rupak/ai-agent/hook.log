@@ -51,3 +51,17 @@
 [HOOK] {"timestamp": "2026-05-11T13:07:44.700864", "trigger": "before_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "glob", "user_message": null, "error": null}
 [HOOK] {"timestamp": "2026-05-11T13:07:44.785382", "trigger": "after_tool", "cwd": "/home/rupak/ai-agent", "tool_name": "glob", "user_message": null, "error": null}
 [HOOK] {"timestamp": "2026-05-11T13:08:14.790175", "trigger": "before_agent", "cwd": "/home/rupak/ai-agent", "tool_name": null, "user_message": "what did i said earlier", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:46:39.184494", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:46:55.625550", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:47:10.041506", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hey how are you", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:47:55.699759", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:48:56.612648", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:49:17.700551", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi how are you", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:51:50.239476", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:55:10.427757", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:56:38.757646", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "hi", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:56:51.861824", "trigger": "before_agent", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": null, "user_message": "can you tell me aboit the prokect", "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:57:08.404714", "trigger": "before_tool", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": "list_dir", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:57:08.424005", "trigger": "after_tool", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": "list_dir", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:57:54.070751", "trigger": "before_tool", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": "read_file", "user_message": null, "error": null}
+[HOOK] {"timestamp": "2026-06-13T23:57:54.090243", "trigger": "after_tool", "cwd": "/home/rupak/Documents/tui-agent", "tool_name": "read_file", "user_message": null, "error": null}
